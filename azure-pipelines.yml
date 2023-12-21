@@ -1,0 +1,108 @@
+trigger:
+- master
+
+variables:
+  tag: '$(Build.BuildId)'
+
+stages:
+
+- stage: IAAC
+  displayName: 'Terraform'
+  jobs:
+  - job: 'RunTerraformFiles'
+    displayName: 'Build Infrastucture'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+
+    - task: TerraformCLI@0
+      inputs:
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform'
+        backendType: 'azurerm'
+        backendServiceArm: 'azure resource manager'
+        backendAzureRmSubscriptionId: '668a5650-5c12-45f3-9f55-a8dbf32a75a3'
+        allowTelemetryCollection: true
+
+    - task: TerraformCLI@0
+      inputs:
+        command: 'apply'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform'
+        environmentServiceName: 'azure resource manager'
+        providerAzureRmSubscriptionId: '668a5650-5c12-45f3-9f55-a8dbf32a75a3'
+        allowTelemetryCollection: true
+    
+
+- stage: DockerImage
+  displayName: 'Docker image'
+  jobs:
+  - job: 'BuildAndPushDockerImage'
+    displayName: 'Build and push Docker image'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    
+    - task: Docker@2
+      displayName: 'Build and push Docker image'
+      inputs:
+        containerRegistry: 'dockerhub'
+        repository: 'ibrahimadel10/flaskapp'
+        command: 'buildAndPush'
+        Dockerfile: '**/Docker/Dockerfile'
+        tags: '$(tag)'
+    
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)'
+        Contents: '**/Kubernetes/*.yaml'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+      
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'manifests'
+        publishLocation: 'Container'
+        
+        
+- stage: DeployToAKS
+  displayName: 'Deploy to AKS cluster'
+  dependsOn: DockerImage
+  jobs:
+  - job: 'DeployToAKS'
+    displayName: 'Deploy to AKS'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        artifactName: 'manifests'
+        itemPattern: '**/*.yaml'
+        targetPath: '$(System.ArtifactsDirectory)'
+
+   
+    - task: KubernetesManifest@0
+      inputs:
+        action: 'deploy'
+        kubernetesServiceConnection: 'AKS'
+        namespace: 'default'
+        manifests: '$(System.ArtifactsDirectory)/Kubernetes/*.yaml'
+        containers: 'ibrahimadel10/flaskapp:$(tag)'
+        
+        
+#- stage: IAAC
+#  displayName: 'Terraform'
+#  jobs:
+#  - job: 'DestroyInfra'
+#    displayName: 'Destroy Infrastucture'
+#    pool:
+#      vmImage: 'ubuntu-latest'
+#    steps:
+#    - task: TerraformCLI@0
+#      inputs:
+#        command: 'destroy'
+#        workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform'
+#        environmentServiceName: 'azure resource manager'
+#        providerAzureRmSubscriptionId: '668a5650-5c12-45f3-9f55-a8dbf32a75a3'
+#        allowTelemetryCollection: true
