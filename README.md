@@ -1,5 +1,18 @@
 ![](https://github.com/IbrahimmAdel/Azure-Devops/blob/master/screenshots/Presentation.gif)
 ---
+## Overview
+ This project dependes on Azure DevOps Pipelines for continuous integration and deployment (CI/CD) and Terraform for infrastructure provisioning on Microsoft Azure Cloud to deploy of a Flask web application using Docker containers and AKS cluster with PostgreSQL database.
+
+---
+## Tools
+* Azure DevOps
+* Microsoft Azure
+* Terraform
+* Docker
+* Kubernetes
+
+  -------
+
 ## Project Structure
 > The project is meticulously organized to encompass various phases, each tailored to address specific elements within the infrastructure:
 
