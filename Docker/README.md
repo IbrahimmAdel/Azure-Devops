@@ -40,11 +40,11 @@ Access the application in your browser at http://localhost:5000.
 
 ## Paths
 
-### /: Displays a welcome message.
+### `/` Displays a welcome message.
 ![](https://github.com/IbrahimmAdel/Banque-Misr-DevOps-Task/blob/master/aws-jenkins-project/Docker/screenshots/localhost%3A5000.png)
-### /user: Provides user registration functionality.
+### `/user` Provides user registration functionality.
 ![](https://github.com/IbrahimmAdel/Banque-Misr-DevOps-Task/blob/master/aws-jenkins-project/Docker/screenshots/localhost%3A5000-user.png)
-### /live: Checks the connection to the PostgreSQL database.
+### `/live` Checks the connection to the PostgreSQL database.
 ![](https://github.com/IbrahimmAdel/Banque-Misr-DevOps-Task/blob/master/aws-jenkins-project/Docker/screenshots/localhost%3A5000-live-success.png)
 ![](https://github.com/IbrahimmAdel/Banque-Misr-DevOps-Task/blob/master/aws-jenkins-project/Docker/screenshots/localhost%3A5000-live-failed.png)
 
